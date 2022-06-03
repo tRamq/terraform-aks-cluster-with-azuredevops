@@ -1,0 +1,21 @@
+# This pipeline will be deploy the application in our AKS cluster . 
+trigger:
+- none
+
+pool:
+  pool: pool
+
+steps:
+- script: |
+    kubectl apply -f deployment.yaml
+    kubectl apply -f service.yaml
+    kubectl apply -f ingress.yaml
+
+  displayName: 'Deploy Kubernetes manifests and expose the ip address'
+  workingDirectory: $(Build.SourcesDirectory)/kubernetes-yamls/
+- task: Bash@3
+  inputs:
+    targetType: 'inline' # It will expose the ip address for accessing application from browser.
+    script: |
+      echo "####### Enter the given ip!"
+      kubectl get ingress

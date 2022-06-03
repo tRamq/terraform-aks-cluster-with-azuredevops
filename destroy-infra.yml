@@ -1,0 +1,31 @@
+# Pipeline for remove provisioned infrastructure with terraform destroy command.
+trigger:
+- none
+
+variables:
+  workspace: '$(Build.SourcesDirectory)'
+
+pool:
+  pool: default
+
+stages:
+- stage: Destroy
+  displayName: 'Destroy existing infra'
+  jobs:
+  - job: Destroy
+    displayName: 'Destroy Existing infra'
+    variables:
+    - group: TerraformEnvVars
+    steps: # Setting given variables and running terraform commands.
+    - script: |
+        set -e
+        terraform init -input=false
+        terraform apply -destroy -input=false -auto-approve
+      workingDirectory: $(Build.SourcesDirectory)/terraform-azure-aks/
+      name: 'DestroyTerraform'
+      displayName: 'Destroy Terraform'
+      env: # Azure Resource Manager Service Connection Variables. 
+        ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+        ARM_TENANT_ID: $(ARM_TENANT_ID)
+        ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)  

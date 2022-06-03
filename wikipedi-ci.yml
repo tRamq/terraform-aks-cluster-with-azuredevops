@@ -1,0 +1,56 @@
+# Ci Pipeline for flask app . It will build and push into the docker hub repository with tags
+
+
+trigger: test # It will trigger automatically whenever you push an update to the spesified branch.
+
+variables:
+  # Container registry service connection established during pipeline creation
+  imageRepository: 'wikipedia-api'
+  dockerfilePath: 'wikipedia-api/Dockerfile'
+  tag: '$(Build.BuildId)'
+  workspace: '$(Build.SourcesDirectory)'
+  # Agent VM image name
+
+#Stages
+stages:
+- stage: My_Environment
+  displayName: Print Params, Test, Build and Push Stage
+  jobs:
+  # Print all the parameters
+  - job: Print_Parameters
+    displayName: Print Parameters
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo 'Print  All Parameters:'
+          echo 'Service Connection: ' $(dockerRegistryServiceConnection)
+          echo '`Image Repository: ' $(imageRepository)
+          echo 'Azure container Registry: ' $(containerRegistry)
+          echo 'Dockerfile Path: ' $(dockerfilePath)
+          echo 'Build ID: ' $(tag)
+    # Run npm install and npm test
+  - job: Application_Tests
+    displayName: Run unit tests
+    dependsOn: Print_Parameters
+    steps:   
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: |
+          /usr/bin/python3 -m pip install -r $(workspace)/wikipedia-api/requirements.txt
+          /usr/bin/python3 $(workspace)/wikipedia-api/test_app.py
+
+
+  # Build an image from Dockerfile and push it to the DockerHub
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'dockerhub-conn'
+        repository: 'darkimpact/wikipedia-api'
+        command: 'buildAndPush'
+        Dockerfile: '$(workspace)/wikipedia-api/Dockerfile'
+        tags: |
+          $(tag)
+          latest
+
