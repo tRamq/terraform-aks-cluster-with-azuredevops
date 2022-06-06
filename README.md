@@ -1,6 +1,5 @@
 # terraform-aks-cluster-with-azuredevops
 
-# SRE CHALLANGE
 
 This Project automatically deploys infrastructure and Web-app to Kubernetes Service with using everthing as code principles.
 
